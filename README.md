@@ -15,7 +15,8 @@ The code is held under the Arduino folder. Any changes to the connections can be
 ## Kicad Files
 A Custom PCB was made for this and can be found under the Kicad folder.
 
-![Image of the PCB](Assets/pcb-blank.png)
+![Image of the PCB Front](Assets/pcb-blank.png)
+![Image of the PCB Rear](Assets/pcb-rear.png)
 
 ## Completed Boards
 The images below show completed boards. 
