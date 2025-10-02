@@ -1,9 +1,11 @@
 # Coal-Hopper
 This is an Arduino based stepper motor controller for a model railway coal-hopper.
 
-Note. The board and software has been updated as more requirements were uncovered. The original files can be found under the V1 folder
+*** The board and software has been updated as more requirements were uncovered. The original files can be found under the V1 folder ***
 
 The design is based around an Arduino Nano and a TMC2209 Silent Stepper motor controller. There are 6 general I/O pins that are used for the home & optional away microswitches, trigger input, busy output, Train detection and Conveyor control. Trimmers are used to set the speed of the hopper, length or travel (if not using Away switch) and delay time at the Away position before moving home.
+
+Note. The 5v supply on the I/O pins comes from the Nano voltage regulator. It will not be enough to drive relays and servos. In this instance, an external power source is required.
 
 The end-stop switches can be Normally-Open or Normally Closed types and set by configuration variables in the software. 
 
