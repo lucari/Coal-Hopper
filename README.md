@@ -17,16 +17,11 @@ The code is held under the Arduino folder. Any changes to the connections can be
 ## Kicad Files
 A Custom PCB was made for this and can be found under the Kicad folder.
 
-![Image of the PCB Front](Images/pcb-blank.png)
-![Image of the PCB Rear](Images/pcb-rear.png)
+![Image of the PCB Front](Images/pcb-v2-front.png)
+![Image of the PCB Rear](Images/pcb-v2-back.png)
 
 ## Completed Boards
-The images below show completed boards. 
-This one has the Opto-Couplers installed.
+The image below shows a completed board. 
 
-![Image of PCB with Opto-Couplers](Images/pcb-opto.png)
-
-This one has direct links and can be used for relay contacts or switch. It also has headers for the LEDs so they can be mounted remotely.
-
-![Image of PCB with Opto-Couplers](Images/pcb-direct.png)
+![Image of PCB Built](Images/pcb-v2-built.png)
 
