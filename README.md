@@ -1,15 +1,17 @@
 # Coal-Hopper
 This is an Arduino based stepper motor controller for a model railway coal-hopper.
 
-The board and software has been updated as more requirements were uncovered. The original files can be found under the V1 folder
+Note. The board and software has been updated as more requirements were uncovered. The original files can be found under the V1 folder
 
-When triggered, the stepper motor will move the hopper to the Away position. After a delay (when the hopper is emptied), the hopper will move back to the Home position.
+The design is based around an Arduino Nano and a TMC2209 Silent Stepper motor controller. There are 6 general I/O pins that are used for the home & optional away microswitches, trigger input, busy output, Train detection and Conveyor control. Trimmers are used to set the speed of the hopper, length or travel (if not using Away switch) and delay time at the Away position before moving home.
 
-The design is based around an Arduino Nano and TMC2209 Silent Stepper motor controller. There are connection for end-stop switches, but only the Home switch is required. There are trigger input and busy output connections protected by opto-couplers. These can be removed if required and direct connections used instead (i.e relay / switch for input). Trimmers can be used to set the speed of the hopper, length or travel (if not using Away switch) and delay time at the Away position before moving home.
+The end-stop switches can be Normally-Open or Normally Closed types and set by confuration variables in the software. 
 
-The end-stop switches can be Normally-Open or Normally Closed types and set by installing a jumper on the appropriate header. For Normally Open types, these can actually be left off but the board has space for the jumpers.
+When triggered, the stepper motor will move the hopper to the Away position. After a delay (when the hopper is emptied), the hopper will move back to the Home position. During this time, the busy output is lowered to disable track power in the unloading section through a relay.
 
-The Arduino can also be powered through the Motor supply. There is a jumper provided so this can be isolated if the Arduino is connected by its USB port to a PC. Its stops strange things happening.
+When a train is detected (reed switch), the conveyor motor, via a relay board, is turned on for a period of time.
+
+The Arduino can be powered through the Motor supply. There is a jumper provided so this can be isolated if the Arduino is connected by its USB port to a PC. It stops strange things happening.
 
 ## Arduino Code
 The code is held under the Arduino folder. Any changes to the connections can be made at the top of the file. The code is written 'long-hand' to make it readable and maintainable.
