@@ -11,7 +11,7 @@ The end-stop switches can be Normally-Open or Normally Closed types and set by c
 
 When a train is detected (reed switch), the conveyor motor, via a relay board, is turned on for a period of time.
 
-When triggered by the level of coal in the hopper or the train leaving the unloading section, the stepper motor will move the hopper to the Away position. After a delay (when the hopper is emptied), the hopper will move back to the Home position. During this time, the busy output is used via a relay to disable track power in the unloading section. 
+When triggered by the level of coal in the hopper or the train leaving the unloading section, and after a delay, the stepper motor will move the hopper to the Away position. Once at the top and after a delay (when the hopper is emptied), the hopper will move back to the Home position. During this time, the busy output is used via a relay to disable track power in the unloading section. 
 
 At initialisation time, the hopper is moved back to Home. If the hopper is already Home, it is moved away for a few turns and then back Home.
 
