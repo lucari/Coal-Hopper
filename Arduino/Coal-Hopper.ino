@@ -10,6 +10,7 @@
 // v3.0 20/11/2024 Added Analog inputs for Speed, Wait and Length. 
 // v4.0 10/12/2024 Reconfigure for new PCB
 // v5.0 07/07/2025 Reconfigure for updated PCB
+// v6.0 07/11/2025 Added delay on trigger to allow coal to clear conveyor before moving bucket.
 //
 
 
@@ -68,6 +69,7 @@
 #define MIN_WAIT 5000
 #define MAX_WAIT 15000
 
+
 //===================================================================================
 
 
@@ -94,8 +96,11 @@ int defaultDelay = DEFAULT_DELAY;
 // Set the default distance to away until we read the triimers
 int turnsToAway = DEFAULT_TURNS_TO_AWAY;
 
-// Set the time to wait at the top before returning.
+// Set the time to wait at the top before returning / time after trigger that we wait for before moving the hopper.
 int awayWaitTime = DEFAULT_WAIT;
+
+// Set a flag to ignore trimmers if all analog inputs are grounded
+bool checkTrimmers = true;
 
 // Variables to specify if home and away switch are normally open or closed. 
 bool awaySwitchNO = DEFAULT_AWAY_OPEN;
@@ -137,7 +142,7 @@ void setup()
   digitalWrite(enablePin, HIGH);
 
   // Show we are busy and converyor off (relays active low)
-  digitalWrite(hopperBusyPin, HIGH);
+  digitalWrite(hopperBusyPin, LOW);
   digitalWrite(conveyorMotorPin, HIGH);
 
   // Clear the LEDs
@@ -147,9 +152,11 @@ void setup()
   // Configure Serial for debugging
   Serial.begin(115200);
 
+  // Give it time to settle
+  delay(500);
+
   // Set the initial state to init.
   hopperState = HOPPER_INIT;
-
 }
 
 void loop()
@@ -395,6 +402,28 @@ InitialiseHopper()
   digitalWrite(awayLEDPin, LOW);
   delay(2000);
 
+  // Check to see if all the analog inputs are grounded. If so, ignore them and use defaults
+  if (analogRead(delayAnalog) == 0 && analogRead(speedAnalog) == 0 && analogRead(lengthAnalog) == 0)
+  {
+    Serial.print(F("InitialiseHopper: All trimmers at 0 so using defaults.\n"));
+
+    Serial.print(F("WaitForHopperTrigger: Setting defaultDelay (Speed) to "));
+    Serial.print(defaultDelay);
+    Serial.print(F(" \n"));
+
+    Serial.print(F("WaitForHopperTrigger: Setting turnsToAway (Length) to "));
+    Serial.print(turnsToAway);
+    Serial.print(F(" \n"));
+
+    Serial.print(F("WaitForHopperTrigger: Setting awayWaitTime (Delay) to "));
+    Serial.print(awayWaitTime);
+    Serial.print(F(" \n"));
+
+    
+    checkTrimmers = false;
+  }
+
+
  
   // First check if the home switch is already active (low)
   if (IsHomeActive() == true)
@@ -508,7 +537,7 @@ WaitForHopperTrigger()
   delay(5000);
 
   // Show we are not busy
-  digitalWrite(hopperBusyPin, LOW);
+  digitalWrite(hopperBusyPin, HIGH);
   
 
   Serial.print(F("WaitForHopperTrigger: Waiting for trigger to move.\n"));
@@ -544,8 +573,8 @@ WaitForHopperTrigger()
     delay(10);
     --count;
     
-    // Timed out for trimmers
-    if (count < 0)
+    // Timed out for trimmers if enabled
+    if (checkTrimmers && count < 0)
     {
       // Set to wait 15 seconds before reading again
       count = 1500;
@@ -556,13 +585,13 @@ WaitForHopperTrigger()
       longScratch2 = longScratch1 * analogRead(speedAnalog);
       longScratch3 = longScratch2 / 1024L;
       defaultDelay = int(longScratch3) + MIN_DELAY;
-      Serial.print(F("WaitForHopperTrigger: Setting defaultDelay to "));
+      Serial.print(F("WaitForHopperTrigger: Setting defaultDelay (Speed) to "));
       Serial.print(defaultDelay);
       Serial.print(F(" \n"));
 
       // Set how many turns to away (Length Trimmer)
       turnsToAway = (((MAX_TURNS_TO_AWAY - MIN_TURNS_TO_AWAY) * analogRead(lengthAnalog)) / 1024) + MIN_TURNS_TO_AWAY;
-      Serial.print(F("WaitForHopperTrigger: Setting turnsToAway to "));
+      Serial.print(F("WaitForHopperTrigger: Setting turnsToAway (Length) to "));
       Serial.print(turnsToAway);
       Serial.print(F(" \n"));
 
@@ -573,21 +602,43 @@ WaitForHopperTrigger()
       longScratch3 = longScratch2 / 1024L;
       awayWaitTime = int(longScratch3) + MIN_WAIT;
 
-      Serial.print(F("WaitForHopperTrigger: Setting awayWaitTime to "));
+      Serial.print(F("WaitForHopperTrigger: Setting awayWaitTime (Delay) to "));
       Serial.print(awayWaitTime);
       Serial.print(F(" \n"));
       
     }
   }
 
-  // We have been triggered
+  // We have been triggered. Wait before moving. Flash Away LED fast
+  Serial.print(F("WaitForHopperTrigger: Got Trigger, Waiting before moving away.\n"));
+  Serial.print(F("WaitForHopperTrigger: Sleeping for "));
+  Serial.print(awayWaitTime);
+  Serial.print(F(" mS\n"));
+
+  // Turn off Away LED
+  digitalWrite(awayLEDPin, LOW);
+
+  // Wait for the defined time and toggle the Away LED every 200mS to show something is happening
+  count = 0;
+  while (count < awayWaitTime)
+  {
+    delay(200);
+    digitalWrite(awayLEDPin, HIGH);
+    delay(200);
+    digitalWrite(awayLEDPin, LOW);
+    count += 400;
+  }
+  // Turn off Away LED
+  digitalWrite(awayLEDPin, LOW);
+
+  // Now we can move the hopper
   Serial.print(F("WaitForHopperTrigger: Got Trigger, state changed to Move-Away.\n"));
 
   // Turn off Home LED
   digitalWrite(homeLEDPin, LOW);
 
   // Show we are busy
-  digitalWrite(hopperBusyPin, HIGH);
+  digitalWrite(hopperBusyPin, LOW);
 
   // Stop the conveyor & timer
   digitalWrite(conveyorMotorPin, HIGH);
@@ -801,7 +852,7 @@ HopperError()
   digitalWrite(enablePin, HIGH);
 
   // Show we are busy 
-  digitalWrite(hopperBusyPin, HIGH);
+  digitalWrite(hopperBusyPin, LOW);
 
   // loop forever until reset
   while(true)
